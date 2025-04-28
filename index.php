@@ -1,7 +1,9 @@
 <?php
-
 session_start();
-$conn = new mysqli('localhost', 'gabriel', '', 'sistema_login');
+$conn = new mysqli('localhost', 'root', '', 'sistema_login');
+
+// Variável para guardar mensagens
+$mensagem = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
@@ -21,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->query("UPDATE usuarios SET codigo_2fa = '$codigo', validado_2fa = 0 WHERE id = " . $usuario['id']);
 
         // Enviar e-mail com PHPMailer
-        require 'vendor/autoload.php'; // Depois te ensino como instalar
+        require 'vendor/autoload.php'; // Depois te ensino como instalar o PHPMailer
         $mail = new PHPMailer\PHPMailer\PHPMailer();
         $mail->isSMTP();
         $mail->Host = 'smtp.seuservidor.com'; // Exemplo: smtp.gmail.com
@@ -37,24 +39,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail->Body = "Seu código de verificação é: $codigo";
 
         if (!$mail->send()) {
-            echo 'Erro ao enviar código. Tente novamente.';
+            $mensagem = 'Erro ao enviar código. Tente novamente.';
+        } else {
+            header('Location: verify.php');
             exit;
         }
-
-        header('Location: verify.php');
-        exit;
     } else {
-        echo "Email ou senha inválidos!";
+        $mensagem = "Email ou senha inválidos!";
     }
 }
 ?>
 
-<h2>Login</h2>
-<form method="POST">
-    Email: <input type="email" name="email" required><br>
-    Senha: <input type="password" name="senha" required><br>
-    <button type="submit">Entrar</button>
-</form>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-<p><a href="register.php">Cadastrar</a></p>
+<div class="container">
+    <h2>Login</h2>
 
+    <!-- Mostrar mensagem de erro se existir -->
+    <?php if (!empty($mensagem)) : ?>
+        <div class="message"><?php echo $mensagem; ?></div>
+    <?php endif; ?>
+
+    <form method="POST">
+        <input type="email" name="email" placeholder="Seu email" required><br>
+        <input type="password" name="senha" placeholder="Sua senha" required><br>
+        <button type="submit">Entrar</button>
+    </form>
+
+    <a href="register.php">Não tem conta? Cadastre-se</a>
+</div>
+
+</body>
+</html>

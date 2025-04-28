@@ -1,12 +1,15 @@
 <?php
-
 session_start();
-$conn = new mysqli('localhost', 'gabriel', '', 'sistema_login');
+$conn = new mysqli('localhost', 'root', '', 'sistema_login');
 
+// Redireciona se não estiver logado
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: index.php');
     exit;
 }
+
+// Variável para mensagens
+$mensagem = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $codigo_digitado = $_POST['codigo'];
@@ -22,13 +25,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: home.php');
         exit;
     } else {
-        echo "Código inválido!";
+        $mensagem = "Código inválido!";
     }
 }
 ?>
 
-<h2>Verificação de 2 Fatores</h2>
-<form method="POST">
-    Código: <input type="text" name="codigo" required><br>
-    <button type="submit">Verificar</button>
-</form>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Verificação 2FA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h2>Verificação de 2 Fatores</h2>
+
+    <!-- Mostrar mensagem de erro -->
+    <?php if (!empty($mensagem)) : ?>
+        <div class="message"><?php echo $mensagem; ?></div>
+    <?php endif; ?>
+
+    <form method="POST">
+        <input type="text" name="codigo" placeholder="Digite seu código" required><br>
+        <button type="submit">Verificar</button>
+    </form>
+
+    <a href="index.php">Voltar para o Login</a>
+</div>
+
+</body>
+</html>
